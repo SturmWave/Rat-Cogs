@@ -44,13 +44,11 @@ class Casino(Database, commands.Cog):
 def __init__(self, bot):
     self.bot = bot
 
-    # Initialize Database FIRST
+    # Explicitly initialize BOTH parents (no super!)
     Database.__init__(self)
-
-    # Initialize Cog properly
     commands.Cog.__init__(self)
 
-    # Tasks AFTER init
+    # Start tasks AFTER everything is initialized
     self.cycle_task = asyncio.create_task(self.membership_updater())
     asyncio.create_task(self.initialise())
 
