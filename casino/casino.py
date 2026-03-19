@@ -41,31 +41,17 @@ _SCHEMA_VERSION: Final[int] = 2
 class Casino(Database, commands.Cog):
     __slots__ = ("bot", "cycle_task")
 
-def __init__(self, bot):
-    self.bot = bot
+    def __init__(self, bot):
+        self.bot = bot
+        self.cycle_task = self.bot.loop.create_task(self.membership_updater())
+        super().__init__()
 
-    # Explicitly initialize BOTH parents (no super!)
-    Database.__init__(self)
-    commands.Cog.__init__(self)
-
-    # Start tasks AFTER everything is initialized
-    self.cycle_task = asyncio.create_task(self.membership_updater())
-    asyncio.create_task(self.initialise())
-
-async def initialise(self):
-    try:
-        self.migration_task = asyncio.create_task(
+    async def initialise(self):
+        self.migration_task = self.bot.loop.create_task(
             self.data_schema_migration(
-                from_version=await self.config.schema_version(),
-                to_version=_SCHEMA_VERSION
+                from_version=await self.config.schema_version(), to_version=_SCHEMA_VERSION
             )
         )
-        await self.migration_task
-    except Exception as e:
-        log.error("Initialization failed", exc_info=e)
-    finally:
-        # THIS PREVENTS THE BOT FROM HANGING
-        self.cog_ready_event.set()
 
     async def red_delete_data_for_user(
         self, *, requester: Literal["discord", "owner", "user", "user_strict"], user_id: int
