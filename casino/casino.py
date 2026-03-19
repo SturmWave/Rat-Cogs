@@ -43,9 +43,16 @@ class Casino(Database, commands.Cog):
 
 def __init__(self, bot):
     self.bot = bot
+
+    # Initialize Database FIRST
+    Database.__init__(self)
+
+    # Initialize Cog properly
+    commands.Cog.__init__(self)
+
+    # Tasks AFTER init
     self.cycle_task = asyncio.create_task(self.membership_updater())
-    super().__init__()
-    asyncio.create_task(self.initialise())  # <-- ADD THIS LINE
+    asyncio.create_task(self.initialise())
 
 async def initialise(self):
     try:
